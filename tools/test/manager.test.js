@@ -158,7 +158,8 @@ run(async () => {
   const pre = req('preload').create({
     config: { options: () => ({ closePreloaded: ['netflix', 'youtube.leanback.v4', 'com.webos.app.browser'] }) },
     luna: async (uri, p) => {
-      calls.push(uri.split('/').pop() + (p && p.id ? ':' + p.id : ''));
+      const a = p && p.application;
+      calls.push(uri.split('/').pop() + (p && p.id ? ':' + p.id : '') + (a ? ':' + a.id + '=' + a.isEnabled : ''));
       if (/\/running$/.test(uri)) return { returnValue: true, running: [{ id: 'netflix' }, { id: 'youtube.leanback.v4' }] };
       if (/getForegroundAppInfo$/.test(uri)) return { returnValue: true, appId: 'youtube.leanback.v4' };
       return { returnValue: true };
@@ -170,5 +171,17 @@ run(async () => {
       calls.indexOf('closeByAppId:netflix') >= 0 &&
       calls.every(c => !/youtube|browser/.test(c) || !/^close/.test(c)),
     'only a listed app that runs in the background is closed: ' + calls.join(' ')
+  );
+  ok(
+    ['netflix', 'youtube.leanback.v4', 'com.webos.app.browser'].every(id => calls.indexOf('setPreloadPolicy:' + id + '=false') >= 0),
+    'LG does not preload a listed app again, also one that is in front or not running'
+  );
+  calls.length = 0;
+  await pre.apply(['netflix', 'amazon', 'com.webos.app.home']);
+  ok(
+    calls.indexOf('setPreloadPolicy:amazon=true') >= 0 &&
+      calls.filter(c => /=true$/.test(c)).length === 1 &&
+      calls.indexOf('setPreloadPolicy:netflix=false') >= 0,
+    'an app taken off the list is preloaded again; the others stay off, and Home is never touched: ' + calls.join(' ')
   );
 });

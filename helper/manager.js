@@ -110,8 +110,7 @@ function create(ctx) {
     if (next.volumeTheme !== cur.volumeTheme && ctx.audio && ctx.audio.syncStockVolumeOSD) {
       ctx.audio.syncStockVolumeOSD(next.volumeTheme);
     }
-    if (next.closePreloaded && next.closePreloaded.length && String(next.closePreloaded) !== String(cur.closePreloaded))
-      preload.apply().catch(() => {});
+    if (String(next.closePreloaded || '') !== String(cur.closePreloaded || '')) preload.apply(cur.closePreloaded).catch(() => {});
     ensureHook();
     return next;
   }

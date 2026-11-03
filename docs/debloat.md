@@ -46,9 +46,13 @@ updated.
 
 ## Preloaded apps
 
-LG starts some apps in the background at boot so they open faster (YouTube, Netflix, the web browser). On a TV with little
-memory that can cost more than it saves. In **Debloat** you can switch on **Close YouTube / Netflix / Web Browser preloaded at
-boot**: about 90 seconds after the service starts, and when you switch it on, the app is closed if it is running and not in front.
-The ids are listed in `options.closePreloaded` in `config.json`. Nothing is changed on the TV: LG preloads the app again at the
-next boot and the service closes it again, and the app opens a little slower the first time you start it. Home, the inputs and
-CleanYourTV's own apps are never closed this way.
+LG starts some apps in the background at boot so they open faster (YouTube, Netflix, the web browser, Prime Video, LG's voice
+app), and its preload manager loads them again a few minutes after you close them. On a TV with little memory that can cost more
+than it saves. In **Debloat** you can switch on **Close YouTube / Netflix / Web Browser / Prime Video / LG voice preloaded at
+boot**: LG's preload manager no longer loads the app in the background (`setPreloadPolicy`, `isEnabled` false), and about 90
+seconds after the service starts, and when you switch it on, the app is closed if it is running and not in front. Switched off
+again, LG preloads the app again. The ids are listed in `options.closePreloaded` in `config.json`. Nothing is changed on disk: the
+preload manager keeps the setting in memory, so LG preloads the app again at the next boot and the service switches it off and
+closes it again. The app opens a little slower the first time you start it, and then stays open until you close it. Home, the
+inputs and CleanYourTV's own apps are never closed this way. A TV without LG's preload manager only gets the close. LG's voice app
+may stay: on an LG G5 (webOS 25) LG starts it at power-on and does not let it be closed.

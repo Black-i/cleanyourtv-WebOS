@@ -1,8 +1,11 @@
 // Preloaded apps (issue 105): LG starts some apps in the background at boot (YouTube, Netflix, the web browser) so they open faster.
 // On a TV with little memory that costs more than it saves. options.closePreloaded in config.json lists app ids to close once, a
-// while after boot (and when the list is saved). An app that is in front is never closed. Nothing is changed on disk: the TV
-// starts them again at its next boot, and the list closes them again.
+// while after boot (and when the list is saved). An app that is in front is never closed. LG's preload manager loads a closed app
+// again a few minutes later, so preloading is also switched off for the listed apps (setPreloadPolicy isEnabled false) and back on
+// for an app taken off the list. Nothing is changed on disk: the preload manager keeps this in memory, so the TV preloads them again
+// after its next boot, and the list switches it off and closes them again. A TV without the preload manager answers with an error.
 const AM = 'luna://com.webos.applicationManager/';
+const PM = 'luna://com.webos.service.preloadmanager/';
 const DELAY = 90000; // after boot, once the apps have finished starting
 const SAFE = /^com\.(cleanyourtv\.|webos\.app\.(home|hdmi|livetv|tvhotkey))/; // never Home, inputs, Live TV or our own apps
 
@@ -14,8 +17,12 @@ const clean = list =>
 
 function create(ctx) {
   const { luna, config } = ctx;
-  async function apply() {
+  // prev: the list before a change, so an app taken off it is preloaded again
+  async function apply(prev) {
     const ids = clean((config.options() || {}).closePreloaded);
+    for (const id of ids) await luna(PM + 'setPreloadPolicy', { application: { id, isEnabled: false } });
+    for (const id of clean(prev).filter(x => ids.indexOf(x) < 0))
+      await luna(PM + 'setPreloadPolicy', { application: { id, isEnabled: true } });
     if (!ids.length) return { closed: [] };
     const r = await luna(AM + 'running', {});
     if (!Array.isArray(r.running)) return { closed: [], error: r.errorText || 'the app manager did not answer' };

@@ -1931,7 +1931,9 @@ function debloatRows() {
   PRELOAD.forEach(function (a) {
     rows.push({
       label: 'Close ' + a.label + ' preloaded at boot',
-      sub: onoff(preloadClosed(a.id)) + ' \u00B7 closes it in the background about 90 s after boot (not when it is in front)',
+      sub:
+        onoff(preloadClosed(a.id)) +
+        ' \u00B7 LG no longer loads it in the background; closes it about 90 s after boot (not when it is in front)',
       fn: function () {
         preloadToggle(a.id);
       },
@@ -1961,6 +1963,8 @@ var PRELOAD = [
   { id: 'youtube.leanback.v4', label: 'YouTube' },
   { id: 'netflix', label: 'Netflix' },
   { id: 'com.webos.app.browser', label: 'Web Browser' },
+  { id: 'amazon', label: 'Prime Video' },
+  { id: 'com.webos.app.voice', label: 'LG voice' },
 ];
 function preloadClosed(id) {
   return ((st.options || {}).closePreloaded || []).indexOf(id) >= 0;
